@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狗狗年齡計算器 - AKC 公式</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+        }
+
+        /* 外框 */
+        .calculator-container {
+            width: 800px;
+            height: 800px;
+            background: #fff;
+            margin: 0 auto;
+            margin-top: 40px;
+            border-radius: 12px;
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            background: #4f46e5;
+            color: white;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        button:hover {
+            background: #3730a3;
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e0e7ff;
+            border-radius: 8px;
+            font-size: 20px;
+            min-height: 120px;
+        }
+
+        /* 響應式：中等尺寸 */
+        @media (max-width: 900px) {
+            .calculator-container {
+                width: 95%;
+                height: auto;
+            }
+        }
+
+        /* 響應式：手機尺寸 */
+        @media (max-width: 600px) {
+            .form-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-container">
+    <h1>🐶 狗狗年齡計算器（AKC 公式）</h1>
+
+    <div class="form-group">
+        <!-- 日期選擇器 -->
+        <div class="form-item">
+            <label for="birthDate">出生日期：</label>
+            <input type="date" id="birthDate">
+        </div>
+
+        <!-- 體型選單：保留需求，但不影響計算 -->
+        <div class="form-item">
+            <label for="size">體型：</label>
+            <select id="size">
+                <option value="small">小型犬（9kg 以下）</option>
+                <option value="medium" selected>中型犬（9–23kg）</option>
+                <option value="large">大型犬（23–45kg）</option>
+                <option value="giant">巨型犬（45kg 以上）</option>
+            </select>
+        </div>
+    </div>
+
+    <button onclick="calculate()">開始計算</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    // 預設日期 = 今天
+    const today = new Date().toISOString().split("T")[0];
+    const sizeInput = document.getElementById("size");
+    const dateInput = document.getElementById("birthDate");
+
+
+    /**********************************************
+     * 初始化：讀取 localStorage
+     **********************************************/
+    function initializeFromStorage() {
+        const storedDate = localStorage.getItem("birthDatey");
+        const storedSize = localStorage.getItem("size");
+
+        const today = new Date().toISOString().split("T")[0];
+        dateInput.max = today;
+
+        if (storedDate) {
+            dateInput.value = storedDate;
+        } else {
+            dateInput.value = today;
+        }
+
+        if (storedSize) {
+            sizeInput.value = storedSize;
+        } else {
+            sizeInput.value = "medium";  // 預設中型犬
+        }
+    }
+
+    initializeFromStorage();
+
+
+    function calculate() {
+        const birthDateValue = dateInput.value;
+        const sizeValue = sizeInput.value;
+        const resultDiv = document.getElementById("result");
+
+        if (!birthDateValue) {
+            resultDiv.innerHTML = "⚠️ 請選擇狗狗的出生日期！";
+            return;
+        }
+
+        const birth = new Date(birthDateValue);
+        const now = new Date();
+
+        if (birth > now) {
+            resultDiv.innerHTML = "⚠️ 出生日期不能大於今天！";
+            return;
+        }
+
+        // 計算狗狗年齡（以年為單位）
+        const diff = now - birth;
+        let dogYears = diff / (1000 * 60 * 60 * 24 * 365.25);
+        dogYears = Number(dogYears.toFixed(2));
+
+        // AKC 換算公式
+        let humanAge = 0;
+
+        if (dogYears <= 1) {
+            humanAge = 15 * dogYears;  // 1 歲以內線性近似
+        } else if (dogYears <= 2) {
+            humanAge = 15 + (dogYears - 1) * 9; // 第 2 年
+        } else {
+            humanAge = 24 + (dogYears - 2) * 5; // 3 年以上
+        }
+
+        humanAge = humanAge.toFixed(1);
+
+        resultDiv.innerHTML = `
+            <strong>🐕 狗狗實際年齡：</strong> ${dogYears} 歲<br>
+            <strong>👨‍🦳 換算成人類年齡（AKC）：</strong> 約 ${humanAge} 歲
+        `;
+
+        // 儲存到 localStorage
+        localStorage.setItem("birthDatey", birthDateValue);
+        localStorage.setItem("size", sizeValue);
+
+    }
+</script>
+
+</body>
+</html>
